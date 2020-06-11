@@ -1,3 +1,0 @@
-﻿  Source.cpp
-C:\Users\rainb\Desktop\Repositories\Pattern Scanning\patternscanexternal\Source.cpp(33,31): warning C4838: conversion from 'int' to 'DWORD' requires a narrowing conversion
-  patternscanexternal.vcxproj -> C:\Users\rainb\Desktop\Repositories\Pattern Scanning\Debug\patternscanexternal.exe
