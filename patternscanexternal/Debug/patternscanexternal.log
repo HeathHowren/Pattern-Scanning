@@ -1,0 +1,4 @@
+﻿  Source.cpp
+C:\Users\rainb\source\repos\patternscanexternal\patternscanexternal\Source.cpp(33,31): warning C4838: conversion from 'int' to 'DWORD' requires a narrowing conversion
+C:\Users\rainb\source\repos\patternscanexternal\patternscanexternal\Source.cpp(51): warning C4715: 'get_module_base': not all control paths return a value
+  patternscanexternal.vcxproj -> C:\Users\rainb\source\repos\patternscanexternal\Debug\patternscanexternal.exe
