@@ -34,22 +34,6 @@ MODULEENTRY32 get_module(const char* modName, DWORD proc_id) {
     return module;
 }
 
-uintptr_t get_module_base(const char* modName, DWORD proc_id) {
-    HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, proc_id);
-    if (hSnap != INVALID_HANDLE_VALUE) {
-        MODULEENTRY32 modEntry;
-        modEntry.dwSize = sizeof(modEntry);
-        if (Module32First(hSnap, &modEntry)) {
-            do {
-                if (!strcmp(modEntry.szModule, modName)) {
-                    CloseHandle(hSnap);
-                    return (uintptr_t)modEntry.modBaseAddr;
-                }
-            } while (Module32Next(hSnap, &modEntry));
-        }
-    }
-}
-
 uintptr_t find_pattern(MODULEENTRY32 module, uint8_t* arr, const char* pattern, int offset, int extra) {
     uintptr_t scan = 0x0;
     const char* pat = pattern;
@@ -71,23 +55,19 @@ uintptr_t find_pattern(MODULEENTRY32 module, uint8_t* arr, const char* pattern, 
 }
 
 int main() {
+    //opening a handle to CSGO
     HWND hwnd = FindWindowA(NULL, "Counter-Strike: Global Offensive");
     DWORD proc_id; GetWindowThreadProcessId(hwnd, &proc_id);
     process_handle = OpenProcess(PROCESS_VM_READ | PROCESS_VM_OPERATION | PROCESS_VM_WRITE, false, proc_id);
-    MODULEENTRY32 client;
-
-    //optional!
-    uintptr_t dwLocalPlayer;
-    uintptr_t dwEntityList;
     
     //sig-scan
-    client = get_module("client.dll", proc_id); //DLL module
+    MODULEENTRY32 client = get_module("client.dll", proc_id); 
     auto bytes = new uint8_t[client.modBaseSize]; //making a variable size of the module
     DWORD bytes_read;
     ReadProcessMemory(process_handle, client.modBaseAddr, bytes, client.modBaseSize, &bytes_read); //reading the module and storing as bytes_read
     if (bytes_read != client.modBaseSize) throw; //checking that the size of bytes read is = to size of bytes in the module
 
-    //example
+    //example of scanning for LocalPlayer and EntityList
     uintptr_t LocalPlayer = find_pattern(client, bytes, "8D 34 85 ? ? ? ? 89 15 ? ? ? ? 8B 41 08 8B 48 04 83 F9 FF", 0x3, 0x4); //0x3 is the offset, 0x4 is the extra
     uintptr_t EntityList = find_pattern(client, bytes, "BB ? ? ? ? 83 FF 01 0F 8C ? ? ? ? 3B F8", 0x1, 0x0); //0x1 is the offset, there is no extra
     delete[] bytes;
@@ -95,39 +75,32 @@ int main() {
     printf("[+] Found dwEntityList @ 0x%X\n", EntityList - (uintptr_t)client.modBaseAddr);
     system("pause");
 
-    //optional!
-    dwLocalPlayer = LocalPlayer - (uintptr_t)client.modBaseAddr; //getting rid of the base is optional, you will just have to add it back when you RPM
-    dwEntityList = EntityList - (uintptr_t)client.modBaseAddr;
+    //optional example
+    uintptr_t dwLocalPlayer = LocalPlayer - (uintptr_t)client.modBaseAddr; //getting rid of the base is optional, you will just have to add it back when you RPM
+    uintptr_t dwEntityList = EntityList - (uintptr_t)client.modBaseAddr;
 
     //fov changer example
     int fov = 90;
+    LocalPlayer = RPM<uintptr_t>(LocalPlayer);
     while (true)
     {
-        uintptr_t localPlayer = RPM<uintptr_t>(LocalPlayer);
-        int iFOV = RPM<int>(localPlayer + m_iDefaultFOV);
-        std::cout << "FOV: " << iFOV << std::endl;
 
-        if (GetAsyncKeyState(0x76 /*F7*/) & 1)
-        {
-            //minus
-            fov = fov - 1;
-            WPM<int>(localPlayer + m_iDefaultFOV, fov);
+        if (GetAsyncKeyState(0x76 /*F7*/) & 1) { //minus
+            fov -= 1; WPM<int>(LocalPlayer + m_iDefaultFOV, fov);
+            std::cout << "FOV: " << RPM<int>(LocalPlayer + m_iDefaultFOV) << std::endl;
         }
 
-        if (GetAsyncKeyState(0x77 /*F8*/) & 1)
-        {
-            //add
-            fov = fov + 1;
-            WPM<int>(localPlayer + m_iDefaultFOV, fov);
+        if (GetAsyncKeyState(0x77 /*F8*/) & 1) { //add
+            fov += +1; WPM<int>(LocalPlayer + m_iDefaultFOV, fov);
+            std::cout << "FOV: " << RPM<int>(LocalPlayer + m_iDefaultFOV) << std::endl;
         }
 
-        if (GetAsyncKeyState(0x78 /*F9*/) & 1)
-        {
-            //resets
-            fov = 90;
-            WPM<int>(localPlayer + m_iDefaultFOV, fov);
+        if (GetAsyncKeyState(0x78 /*F9*/) & 1) { //resets
+            fov = 90; WPM<int>(LocalPlayer + m_iDefaultFOV, fov);
+            std::cout << "FOV: " << RPM<int>(LocalPlayer + m_iDefaultFOV) << std::endl;
         }
     }
 
     system("pause");
+    return 0;
 }
