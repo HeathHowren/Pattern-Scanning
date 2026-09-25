@@ -2,7 +2,7 @@
 
 An external array-of-byte (AOB) pattern scanner in C++, written for the [Pattern scanning lesson](https://www.youtube.com/watch?v=sS7Xgtqc1yc) on the [Cyborg Elf YouTube channel](https://www.youtube.com/@CyborgElf).
 
-> **Legacy code, kept for education.** Written in 2020 against CS:GO, which has since been replaced by CS2, so the signature and window name here no longer match anything. The technique is unchanged: it is how tools find code that moves between builds. Practise on software you own or on open-source games, never on online multiplayer games.
+> **Legacy code, kept for education.** Written in 2020 against CS:GO, which has since been replaced by CS2, so the signature and window name here no longer match anything. The technique is unchanged: it is how tools find code that moves between builds. Practice on software you own or on open-source games, never on online multiplayer games.
 
 ## What a pattern scan is
 
